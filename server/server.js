@@ -15,7 +15,9 @@ app.use(cors({
 database.connect();
 
 const userRoutes = require("./routes/user");
+const accountRoutes = require("./routes/account");
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/account", accountRoutes);
 
 app.listen(3000, ()=>{console.log("server started at port 3000")});

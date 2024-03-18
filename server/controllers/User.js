@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Account = require("../models/Account")
 const z = require("zod");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -64,14 +65,21 @@ exports.signup = async(req, res) => {
         const existingUser = await User.findOne({userName : userName});
         if(existingUser){return res.status(401).json({ success : false, "msg" : "User Already Registered"})}
 
-        await User.create({
+        const user = await User.create({
             firstName, lastName, userName, password
+        })
+
+        await Account.create({
+            userId : user._id,
+            balance : Math.floor(Math.random() * 10000) + 1
         })
 
         return res.status(200).json({
             success : true,
             "msg" : "User Created Successfully"
         })
+
+
  
     }catch(err){
         console.log(err.message);
