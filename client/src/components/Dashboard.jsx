@@ -1,5 +1,7 @@
+import { Appbar } from "./Appbar";
+
 export function Dashboard(){
     return <div>
-        Dashboard Page
+        <Appbar/>
     </div>
 }
