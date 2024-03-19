@@ -144,6 +144,7 @@ export function Signup() {
                             setPassword("");
                             setUserName("");
                         }else{
+                          const data = await res.json();
                             alert(JSON.stringify(data.msg));
                             setFirstName("");
                             setLastName("");
