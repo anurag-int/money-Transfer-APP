@@ -7,7 +7,8 @@ const accountSchema = mongoose.Schema({
         required : true
     },
     balance : {
-        type : Number
+        type : Number,
+        required : true
     }
 })
 

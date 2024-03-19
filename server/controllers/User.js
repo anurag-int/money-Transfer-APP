@@ -4,27 +4,18 @@ const z = require("zod");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const passwordSchemaCheck = z.string().min(6).refine(password => 
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password),
-    {
-        message: "Minimum 6 digit Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
-    }
-);
 
 const userNameSchema = z.string().email();
 const firstNameSchema = z.string()
 const lastNameSchema = z.string()
-const passwordSchema = passwordSchemaCheck
+const passwordSchema = z.string()
 
 
 exports.signup = async(req, res) => {
     try{
         const { firstName, lastName, password, userName } = req.body; 
 
-        //validation-1
-        
-
-        //validation-2(zod)
+        //validation-1(zod)
         const checkUserName = userNameSchema.safeParse(userName);
         const checkFirstName = firstNameSchema.safeParse(firstName);
         const checkLastName = lastNameSchema.safeParse(lastName);
@@ -126,10 +117,11 @@ exports.signin = async(req, res) => {
                     expires : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
                     httpOnly : true,
                 };
+                
                 res.cookie("token", token, options).status(200).json({
                     success : true,
                     token,
-                    message : "User login successfully"
+                    "msg" : "User login successfully"
                 });
         }else{
             return res.status(400).json({
@@ -153,7 +145,21 @@ exports.signin = async(req, res) => {
 
 exports.bulk = async(req, res) => {
     try{
-        const filter = req.query.filter;
+        const filter = req.query.filter || "";
+        
+        if(!filter){
+            let users = await User.find({});
+            const usersWithSelectedFields = users.map(user => ({
+                _id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName
+            }));
+        
+            return res.status(200).json({
+                success : true,
+                users : usersWithSelectedFields 
+            })
+        }
     const users = await User.find({
         $or : [
             {firstName : filter},

@@ -1,3 +1,10 @@
+// ---> Problems that comes while doing transactions
+// 1---> all the transaction must commit, no partial commit ---> ex.. if the money deducted from user1 and somehow server down and the money not been credited to user2 bank account, ---> than we need to rollback that transactions.
+// 2---> at a time only one transaction needs to done. Ex.. --> lets suppose I have 20 rupees and somehow I want to send to the 2 other users 20 each and If I send both at same time this might created issue. to solve this we need to apply logic that at a time only one transaction must be done.
+
+
+
+const mongoose = require("mongoose");
 const Account = require("../models/Account");
 
 
@@ -24,43 +31,37 @@ exports.balance = async(req, res)=>{
 
 
 exports.transfer = async(req, res) => {
-    const senderId = req.user.id;
-    const { to, amount } = req.body;
-    
-    if(!to || !amount){return res.status(400).json({success : false, "msg" : "all fields are required"})}
+    const mongoose = require('mongoose');
+    const connection = mongoose.connection;
+    const session = await connection.startSession();
 
-    // receipent Validation
-    if(!(await Account.findOne({ userId : to}))){
-        return res.status(400).json({
-            success : false,
-            "msg" : "Invalid account"
-        })
-    }
-    const senderAccount = await Account.findOne({userId : senderId});
-    const temp_balance = senderAccount.balance;
+    session.startTransaction();
+    const { amount, to } = req.body;
 
-    if(senderAccount.balance < amount ){
-        return res.status(400).json({
-            success : false,
-            "msg" : "Insufficient balance"
-        })
+    if (!req.user || !req.body) {
+        return res.status(400).json({ error: "Request is missing user or body" });
     }
-    
-    try{
-        await Account.findOneAndUpdate({userId : senderId}, {$inc : {balance : -amount}})
-        await Account.findOneAndUpdate({userId : to}, {$inc : {balance : +amount}});
-    
-        return res.status(200).json({
-            success : true,
-            "msg" : "Transfer Successful"
-        })
+
+    const account = await Account.findOne({userId : req.user.id}).session(session);
+
+    if(!account || account.balance < amount){
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ error: "Insufficient Balance" });
     }
-    catch(err){
-        await Account.findByIdAndUpdate({userId : senderId}, {balance : temp_balance});
-        return res.status(500).json({
-            success : false,
-            "msg" : "Transaction Failed"
-        })
+
+    const toAccount = await Account.findOne({ userId : to }).session(session);
+
+    if(!toAccount){
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ error: "Invalid account" });
     }
-    
+
+    await Account.updateOne({ userId : req.user.id }, { $inc : { balance : -amount } }).session(session);
+    await Account.updateOne({ userId : to }, { $inc : { balance : amount } }).session(session);
+
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({ message: "Transaction successful" });
 }
