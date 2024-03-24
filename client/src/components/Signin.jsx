@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function Signin(){
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+    const navigate = useNavigate();
     return <div>
         <section className="bg-gray-50 dark:bg-gray-900">
   <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -53,10 +53,10 @@ export function Signin(){
                             }
                         }).then(async function(res){
                             const data = await res.json();
+                            localStorage.setItem("token", data.token)
                             alert(data.msg)
                             if(data.status == 200){
-                                {alert(JSON.stringify(data.msg))}
-                                setIsLoggedIn(true);
+                                navigate("/dashboard?name=" + data.user.firstName)
                             }else{
                                 const data = await res.json();
                                   alert(JSON.stringify(data.msg));

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export function Signup() {
     const [firstName, setFirstName] = useState("");
@@ -122,8 +123,8 @@ export function Signup() {
                 </div>
                 <button
                   type="submit"
-                  onClick={()=>{
-                        fetch("http://localhost:3000/api/v1/user/signup", {
+                  onClick={async ()=>{
+                        const response = await axios.post("http://localhost:3000/api/v1/user/signup", {
                         method : "POST",
                         body : JSON.stringify({
                             firstName : firstName,
@@ -132,29 +133,9 @@ export function Signup() {
                             password : password
                         }),
                         headers : {
-                            "Content-Type" : "application/json"
+                          "Content-Type" : "application/json"
                         }
                     })
-                    .then(async function(res){
-                        const data = await res.json();
-                        if(data.status == 200){
-                            alert(JSON.stringify(data.msg));
-                            setFirstName("");
-                            setLastName("");
-                            setPassword("");
-                            setUserName("");
-                        }else{
-                          const data = await res.json();
-                            alert(JSON.stringify(data.msg));
-                            setFirstName("");
-                            setLastName("");
-                            setPassword("");
-                            setUserName("");
-                        }
-                    })
-                    .catch(function(error) {
-                        console.error('Error:', error);
-                    });
                   }}
                   class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                 >

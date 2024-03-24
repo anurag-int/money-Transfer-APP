@@ -1,9 +1,24 @@
 import { Users } from "./Users"
 import { Balance } from "./Balance";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"
+
+import axios from 'axios';
 
 export function Appbar() {
+  const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
+
+    useEffect(()=>{
+      axios.get("http://localhost:3000/api/v1/user/bulk?filter=" + filter)
+      .then(response => {
+        console.log(response.data.users)
+        setUsers(response.data.users);
+      })
+      .catch(error => {
+        console.error(error)
+      })
+    }, [filter])
 
   return (
     <div>
@@ -16,16 +31,24 @@ export function Appbar() {
                 <div className="flex flex-row justify-between space-x-3">
                   <p>Hello</p>
                   <div className="rounded-full cursor-pointer w-6 text-center text-black bg-gray-300">
-                    A
+                  A
                   </div>
                 </div> 
               </div>
 
               <Balance></Balance>
+              <div>
+                <input type="text" name="filter" id="filter" className="mb-2 bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Users..." required
+                  onChange={(e) => {
+                  console.log(e.target.value)
+                setFilter(e.target.value);
+                }}
+                />
+              </div>
 
               <div className="space-y-4">
                 <p className="text-white">Your Contacts</p>
-                <Users></Users>
+                <Users users={users}></Users>
               </div>
             </div>
           </div>
