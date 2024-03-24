@@ -85,7 +85,8 @@ exports.signup = async(req, res) => {
 exports.signin = async(req, res) => {
     try{
         const { userName, password } = req.body;
-    
+        console.log(userName, password);
+        
         //validation-1
         if(!userName || !password) return res.status(400).json({ success : false, "msg" : "All field are required" })
 
@@ -121,6 +122,7 @@ exports.signin = async(req, res) => {
                 res.cookie("token", token, options).status(200).json({
                     success : true,
                     token,
+                    user,
                     "msg" : "User login successfully"
                 });
         }else{
